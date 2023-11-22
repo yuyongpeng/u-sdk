@@ -19,8 +19,8 @@ var rootCmd = &cobra.Command{
 
 var genevm = &cobra.Command{
 	Use:   "genevm",
-	Short: "生成EVM的 助记词，私钥，公钥，地址",
-	Long:  `生成EVM的 助记词，私钥，公钥，地址`,
+	Short: "生成EVM的 助记词，私钥，公钥，地址，对应原生私钥，原生公钥",
+	Long:  `生成EVM的 助记词，私钥，公钥，地址，对应原生私钥，原生公钥`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var acc = eth.Account{}
 		nmemonic, privateKeyHex, publicKeyHex, address, err := acc.HDWalletGenerate()
