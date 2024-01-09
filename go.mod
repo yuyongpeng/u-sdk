@@ -3,17 +3,27 @@ module u-sdk
 go 1.20
 
 require (
+	github.com/avast/retry-go/v4 v4.5.1
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
+	github.com/disintegration/imaging v1.6.2
 	github.com/ethereum/go-ethereum v1.11.2
+	github.com/fogleman/gg v1.3.0
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/irisnet/core-sdk-go v0.2.1-0.20230606070930-9082c23b90fc
-	github.com/status-im/keycard-go v0.2.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.4
 	github.com/tyler-smith/go-bip39 v1.1.0
+	github.com/u2takey/ffmpeg-go v0.5.0
+	golang.org/x/image v0.14.0
+	golang.org/x/net v0.10.0
 )
 
 require (
+	github.com/aws/aws-sdk-go v1.38.20 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/u2takey/go-utils v0.3.1 // indirect
 )
 
 require (
@@ -42,9 +52,8 @@ require (
 	github.com/tendermint/tendermint v0.34.14 // indirect
 	github.com/tjfoc/gmsm v1.4.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 	google.golang.org/grpc v1.53.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

@@ -83,7 +83,9 @@ func TestHDWalletGenerateWithNmemonic(t *testing.T) {
 	assert.Equal(t, publicKeyExp, publicKeyHex)
 	assert.Equal(t, addressExp, address)
 
-	nmemonic24 := "sorry liberty pioneer weird senior jungle author canvas girl patrol wrestle magnet struggle shop turn trial rate wrist trouble uncover lend enough cushion bless"
+	nmemonic24 := "street glance high ski dinner mixture topple meadow mechanic buddy during bridge vendor buyer mass remember identify jeans about grocery talk piano palace negative"
+	//nmemonic24 := "sorry liberty pioneer weird senior jungle author canvas girl patrol wrestle magnet struggle shop turn trial rate wrist trouble uncover lend enough cushion bless"
+
 	privateKeyExp = "61decf8be7824f624a1513d3c4d0ce3af60851c2501a201e239fa19c90efdfcd"
 	publicKeyExp = "97773d139ef556af64c36937abf952f02e0544f52e32b8108092e155d4f4f79df178a9afa583f49ee1db25162072a841484c21938094176a80b7a56738180621"
 	addressExp = "0xDfb44BDe559fFe1ed37ba3F46a82F1353795c4bF"
