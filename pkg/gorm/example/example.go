@@ -223,6 +223,7 @@ func Query() {
 	// 两张表联查，2个sql(有一个预加载sql，一个查询sql)，合并到一个对象中
 	// SELECT * FROM `admin_role` WHERE `admin_role`.`role_id` = 1
 	// SELECT * FROM `admin_account` WHERE `admin_account`.`account_id` = 1 ORDER BY `admin_account`.`account_id` LIMIT 1
+	// **** 如果要使用预加载，就必须在GORM层面建立关联关系 ****
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	adm, err := q.AdminAccount.Preload(q.AdminAccount.Roles).Where(q.AdminAccount.AccountID.Eq(1)).Debug().First()
 	if err != nil {
@@ -236,6 +237,7 @@ func Query() {
 	// SELECT * FROM `admin_role` WHERE `admin_role`.`role_id` IN (8,1,9,10)
 	// SELECT `admin_account`.`account_id`,`admin_account`.`account_name`,`admin_role`.`role_id`,`admin_role`.`group_name_en`
 	// FROM `admin_account` LEFT JOIN `admin_role` ON `admin_account`.`role_id` = `admin_role`.`role_id` WHERE `admin_account`.`account_id` IN (10057,10058,10064,10065)
+	// **** 如果要使用预加载，就必须在GORM层面建立关联关系 ****
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	adm2, err := q.AdminAccount.Preload(q.AdminAccount.Roles).
 		Select(q.AdminAccount.AccountID, q.AdminAccount.AccountName, q.AdminRole.RoleID, q.AdminRole.GroupNameEn).
@@ -250,6 +252,8 @@ func Query() {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// model模型中字段是 string 类型，无法倒出到result。必须是 *string 类型才能倒出
 	// 一个sql，只查询需要的字段
+	// **** 如果只是单纯的 left join 可以不需要在GORM层面建立关联，直接scan() ****
+	// **** 如果要使用预加载，就必须在GORM层面建立关联关系 ****
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	var scanResult []rst
 	// 两张表联查，一个sql，合并到一个对象中
@@ -257,7 +261,7 @@ func Query() {
 		LeftJoin(q.AdminRole, q.AdminAccount.RoleID.EqCol(q.AdminRole.RoleID)).
 		Where(q.AdminAccount.AccountID.In(10057, 10058, 10064, 10065)).
 		Debug().Limit(4).Scan(&scanResult)
-	if err != nil {
+	if err3 != nil {
 		log.Printf("%s", err3)
 	}
 
