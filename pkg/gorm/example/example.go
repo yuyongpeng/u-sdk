@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm/logger"
 	"log"
 	"strings"
-	"u-sdk/pkg/gorm/model"
 	"u-sdk/pkg/gorm/query"
 )
 
@@ -58,8 +57,7 @@ type Querier interface {
 	//QueryWith(p *gen.T) (gen.T, error)
 }
 
-////////////////////////////////////////////////////
-
+// //////////////////////////////////////////////////
 func GenerateCode() {
 	// 官方文档：https://gorm.io/zh_CN/gen/dao.html
 	g := gen.NewGenerator(gen.Config{
@@ -154,7 +152,7 @@ func GenerateCode() {
 			//gen.FieldAddSuffix("_suf"),      // 字段添加后缀
 			// 生成关联关系，并不会删除role_id字段，只是新增了一个数组
 			gen.FieldRelate(
-				field.HasMany,
+				field.HasOne,
 				"Roles",
 				g.GenerateModel("admin_role"),
 				&field.RelateConfig{
@@ -207,44 +205,61 @@ func GenerateCode() {
 	g.Execute()
 }
 
+type rst struct {
+	AccountID   uint32
+	AccountName string
+	RoleID      uint32
+	GroupNameEn string
+}
+
 func Query() {
 	gormdb, _ := gorm.Open(mysql.Open("root:123456@(127.0.0.1:3306)/dar?charset=utf8mb4&parseTime=True&loc=Local"))
 	gormdb.Debug()
 	gormdb.Logger.LogMode(logger.Info)
 	q := query.Use(gormdb)
 
-	// 查询关联数据，必须使用 Preload()方法 将关联数据预加载
-	// 两张表联查，2个sql，合并到一个对象中
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 查询关联数据，必须使用 Preload()方法 将关联数据预加载，会将预加载关联表的所有字段的数据都查询出来。
+	// 两张表联查，2个sql(有一个预加载sql，一个查询sql)，合并到一个对象中
+	// SELECT * FROM `admin_role` WHERE `admin_role`.`role_id` = 1
+	// SELECT * FROM `admin_account` WHERE `admin_account`.`account_id` = 1 ORDER BY `admin_account`.`account_id` LIMIT 1
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	adm, err := q.AdminAccount.Preload(q.AdminAccount.Roles).Where(q.AdminAccount.AccountID.Eq(1)).Debug().First()
 	if err != nil {
 		log.Printf("%s", err)
 	}
 	fmt.Printf("%+v\n", adm)
 
-	// 两张表联查，一个sql，合并到一个对象中
-	adm2, err := q.AdminAccount.Preload(q.AdminAccount.Roles).LeftJoin(q.AdminRole, q.AdminAccount.RoleID.EqCol(q.AdminRole.RoleID)).Where(q.AdminAccount.AccountID.Eq(1)).Debug().First()
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 因为有 预加载 Preload() ,所以会将预加载关联表的所有字段的数据都查询出来。
+	// 两张表联查，一个查询sql，一个预加载sql，合并到一个对象中。预加载表是全部数据都查询出来
+	// SELECT * FROM `admin_role` WHERE `admin_role`.`role_id` IN (8,1,9,10)
+	// SELECT `admin_account`.`account_id`,`admin_account`.`account_name`,`admin_role`.`role_id`,`admin_role`.`group_name_en`
+	// FROM `admin_account` LEFT JOIN `admin_role` ON `admin_account`.`role_id` = `admin_role`.`role_id` WHERE `admin_account`.`account_id` IN (10057,10058,10064,10065)
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	adm2, err := q.AdminAccount.Preload(q.AdminAccount.Roles).
+		Select(q.AdminAccount.AccountID, q.AdminAccount.AccountName, q.AdminRole.RoleID, q.AdminRole.GroupNameEn).
+		LeftJoin(q.AdminRole, q.AdminAccount.RoleID.EqCol(q.AdminRole.RoleID)).
+		Where(q.AdminAccount.AccountID.In(10057, 10058, 10064, 10065)).
+		Debug().Find()
 	if err != nil {
 		log.Printf("%s", err)
 	}
 	fmt.Printf("%+v\n", adm2)
 
-	query.Q = q
-
-	adm3, err := query.Q.AdminAccount.Preload(query.Q.AdminAccount.Roles).Where(query.Q.AdminAccount.AccountID.Eq(1)).Debug().First()
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// model模型中字段是 string 类型，无法倒出到result。必须是 *string 类型才能倒出
+	// 一个sql，只查询需要的字段
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	var scanResult []rst
+	// 两张表联查，一个sql，合并到一个对象中
+	err3 := q.AdminAccount.Select(q.AdminAccount.AccountID, q.AdminAccount.AccountName, q.AdminRole.RoleID, q.AdminRole.GroupNameEn).
+		LeftJoin(q.AdminRole, q.AdminAccount.RoleID.EqCol(q.AdminRole.RoleID)).
+		Where(q.AdminAccount.AccountID.In(10057, 10058, 10064, 10065)).
+		Debug().Limit(4).Scan(&scanResult)
 	if err != nil {
-		log.Printf("%s", err)
+		log.Printf("%s", err3)
 	}
-	fmt.Printf("%+v\n", adm3)
-
-	a := model.AdminAccount{}
-	account := q.AdminAccount
-	role := q.AdminRole
-	account.Select(account.AccountName, account.GroupName).LeftJoin(role, account.RoleID.EqCol(role.RoleID)).Scan(&a)
-	fmt.Printf("%v", account)
-	// 只能返回account的数据，role没有数据
-	account.Preload(account.Roles).LeftJoin(role, account.RoleID.EqCol(role.RoleID)).Debug().Scan(&a.Roles)
-	//account.LeftJoin(role, account.RoleID.EqCol(role.RoleID)).ro
-	fmt.Printf("%v", a)
 
 	// Dynamic SQL API
 	//adms, err := query.AdminAccount.FilterWithNameAndRole("modi", "admin")

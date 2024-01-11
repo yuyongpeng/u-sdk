@@ -53,7 +53,7 @@ func newAdminAccount(db *gorm.DB, opts ...gen.DOOption) adminAccount {
 	_adminAccount.IsSystemAdmin = field.NewUint16(tableName, "is_system_admin")
 	_adminAccount.Status = field.NewUint16(tableName, "status")
 
-	_adminAccount.Roles = adminAccountHasManyRoles{
+	_adminAccount.Roles = adminAccountHasOneRoles{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("Roles", "model.AdminRole"),
@@ -95,7 +95,7 @@ type adminAccount struct {
 	IsSystemAdmin field.Uint16 // 是否为系统管理员：1-是；2-否
 	Status        field.Uint16 // 状态：0-删除；1-正常；2-锁定
 
-	Roles adminAccountHasManyRoles
+	Roles adminAccountHasOneRoles
 
 	fieldMap map[string]field.Expr
 }
@@ -192,13 +192,13 @@ func (a adminAccount) replaceDB(db *gorm.DB) adminAccount {
 	return a
 }
 
-type adminAccountHasManyRoles struct {
+type adminAccountHasOneRoles struct {
 	db *gorm.DB
 
 	field.RelationField
 }
 
-func (a adminAccountHasManyRoles) Where(conds ...field.Expr) *adminAccountHasManyRoles {
+func (a adminAccountHasOneRoles) Where(conds ...field.Expr) *adminAccountHasOneRoles {
 	if len(conds) == 0 {
 		return &a
 	}
@@ -211,27 +211,27 @@ func (a adminAccountHasManyRoles) Where(conds ...field.Expr) *adminAccountHasMan
 	return &a
 }
 
-func (a adminAccountHasManyRoles) WithContext(ctx context.Context) *adminAccountHasManyRoles {
+func (a adminAccountHasOneRoles) WithContext(ctx context.Context) *adminAccountHasOneRoles {
 	a.db = a.db.WithContext(ctx)
 	return &a
 }
 
-func (a adminAccountHasManyRoles) Session(session *gorm.Session) *adminAccountHasManyRoles {
+func (a adminAccountHasOneRoles) Session(session *gorm.Session) *adminAccountHasOneRoles {
 	a.db = a.db.Session(session)
 	return &a
 }
 
-func (a adminAccountHasManyRoles) Model(m *model.AdminAccount) *adminAccountHasManyRolesTx {
-	return &adminAccountHasManyRolesTx{a.db.Model(m).Association(a.Name())}
+func (a adminAccountHasOneRoles) Model(m *model.AdminAccount) *adminAccountHasOneRolesTx {
+	return &adminAccountHasOneRolesTx{a.db.Model(m).Association(a.Name())}
 }
 
-type adminAccountHasManyRolesTx struct{ tx *gorm.Association }
+type adminAccountHasOneRolesTx struct{ tx *gorm.Association }
 
-func (a adminAccountHasManyRolesTx) Find() (result []*model.AdminRole, err error) {
+func (a adminAccountHasOneRolesTx) Find() (result *model.AdminRole, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a adminAccountHasManyRolesTx) Append(values ...*model.AdminRole) (err error) {
+func (a adminAccountHasOneRolesTx) Append(values ...*model.AdminRole) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -239,7 +239,7 @@ func (a adminAccountHasManyRolesTx) Append(values ...*model.AdminRole) (err erro
 	return a.tx.Append(targetValues...)
 }
 
-func (a adminAccountHasManyRolesTx) Replace(values ...*model.AdminRole) (err error) {
+func (a adminAccountHasOneRolesTx) Replace(values ...*model.AdminRole) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -247,7 +247,7 @@ func (a adminAccountHasManyRolesTx) Replace(values ...*model.AdminRole) (err err
 	return a.tx.Replace(targetValues...)
 }
 
-func (a adminAccountHasManyRolesTx) Delete(values ...*model.AdminRole) (err error) {
+func (a adminAccountHasOneRolesTx) Delete(values ...*model.AdminRole) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -255,11 +255,11 @@ func (a adminAccountHasManyRolesTx) Delete(values ...*model.AdminRole) (err erro
 	return a.tx.Delete(targetValues...)
 }
 
-func (a adminAccountHasManyRolesTx) Clear() error {
+func (a adminAccountHasOneRolesTx) Clear() error {
 	return a.tx.Clear()
 }
 
-func (a adminAccountHasManyRolesTx) Count() int64 {
+func (a adminAccountHasOneRolesTx) Count() int64 {
 	return a.tx.Count()
 }
 
