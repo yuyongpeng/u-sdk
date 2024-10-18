@@ -20,7 +20,6 @@ Flags:
   -h, --help   help for cbac
 
 Use "cbac [command] --help" for more information about a command.
-```
 
 ./cbac genevm
 eth_secp256k1
@@ -33,3 +32,4 @@ privateKeyIAA(原生私钥):         0xfcd2efcc2002fcf0c81ecc8c1945b2e98879c4578
 publicKeyIAA(原生公钥):          0xf3b3cd032103e312f5354530b5adf42ebeeda735ff314c1f6d9152bca66ec816101bea351030
 
 这个是随机生成的，每次都不同，请记住所有的参数，一旦忘记，就无法操作账号。
+```
